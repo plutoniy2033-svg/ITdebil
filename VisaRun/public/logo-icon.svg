@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" fill="none" aria-hidden="true">
+  <!-- Speed lines -->
+  <path d="M8 52 L32 48" stroke="#003366" stroke-width="4" stroke-linecap="round"/>
+  <path d="M6 42 L34 37" stroke="#003366" stroke-width="4" stroke-linecap="round"/>
+  <path d="M10 32 L36 28" stroke="#003366" stroke-width="4" stroke-linecap="round"/>
+  <!-- V body -->
+  <path d="M38 72 L58 22 L78 72" stroke="#003366" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Arrow curve -->
+  <path d="M52 58 C62 38, 78 28, 98 18" stroke="#003366" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M88 14 L100 18 L96 30" stroke="#003366" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

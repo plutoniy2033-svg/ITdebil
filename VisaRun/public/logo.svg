@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" aria-label="VisaRun">
+  <g stroke="#003366" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 88H54" stroke-width="7.5"/>
+    <path d="M12 68H58" stroke-width="7.5"/>
+    <path d="M22 48H50" stroke-width="7.5"/>
+    <path d="M64 108L84 40L104 108" stroke-width="9"/>
+    <path d="M72 94C86 68 104 52 132 38" stroke-width="8.5"/>
+    <path d="M122 30L140 40L130 56" stroke-width="7.5"/>
+    <path d="M110 68H146" stroke-width="7.5"/>
+    <path d="M114 88H150" stroke-width="7.5"/>
+  </g>
+  <text
+    x="100"
+    y="168"
+    text-anchor="middle"
+    fill="#003366"
+    font-family="'DM Sans', system-ui, sans-serif"
+    font-size="26"
+    font-weight="700"
+    letter-spacing="0.14em"
+  >VISARUN</text>
+</svg>

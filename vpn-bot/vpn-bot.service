@@ -1,0 +1,15 @@
+[Unit]
+Description=Telegram VPN Monitor Bot
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_LINUX_USER
+WorkingDirectory=/opt/vpn-bot
+EnvironmentFile=/opt/vpn-bot/.env
+ExecStart=/opt/vpn-bot/venv/bin/python /opt/vpn-bot/bot.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,3 @@
+# Replace YOUR_LINUX_USER with your VPS username (whoami).
+# Install: sudo cp sudoers.vpn-bot /etc/sudoers.d/vpn-bot && sudo chmod 440 /etc/sudoers.d/vpn-bot
+YOUR_LINUX_USER ALL=(root) NOPASSWD: /bin/systemctl restart xray, /bin/systemctl restart hysteria, /bin/systemctl status xray, /bin/systemctl status hysteria, /bin/systemctl is-active xray, /bin/systemctl is-active hysteria
