@@ -100,6 +100,16 @@ export interface AppSettings {
 
 export type Language = 'ru' | 'en' | 'vi';
 
+export interface Client {
+  id: string;
+  email: string;
+  fullName: string;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
+
 export interface EVisaFormData {
   fullName: string;
   passportNumber: string;

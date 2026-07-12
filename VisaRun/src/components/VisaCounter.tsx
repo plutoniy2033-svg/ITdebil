@@ -6,7 +6,6 @@ import { EntryDateModal } from './EntryDateModal';
 export function VisaCounter() {
   const {
     entryDate,
-    location,
     dayLimit,
     daysUsed,
     daysRemaining,
@@ -25,11 +24,6 @@ export function VisaCounter() {
       <div className="visa-hero__glow visa-hero__glow--2" aria-hidden />
 
       <div className="visa-hero__content">
-        <p className="visa-hero__location">
-          <span className="visa-hero__location-dot" aria-hidden />
-          {location || t('Укажите местоположение', 'Set your location')}
-        </p>
-
         <button
           type="button"
           className={`visa-hero__ring visa-hero__ring--${statusColor} visa-hero__ring--clickable`}

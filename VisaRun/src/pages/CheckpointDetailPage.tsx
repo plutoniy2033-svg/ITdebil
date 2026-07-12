@@ -4,12 +4,7 @@ import { CheckpointMap } from '../components/CheckpointMap';
 import { checkpoints } from '../data/checkpoints';
 import { AppIcon } from '../components/AppIcon';
 import { useLanguage } from '../context/LanguageContext';
-
-const statusLabels = {
-  open: { ru: 'Открыт', en: 'Open', class: 'badge--success' },
-  closed: { ru: 'Закрыт', en: 'Closed', class: 'badge--danger' },
-  busy: { ru: 'Загружен', en: 'Busy', class: 'badge--warning' },
-};
+import { getCheckpointStatusLabel } from '../utils/checkpointStatus';
 
 export function CheckpointDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,7 +23,7 @@ export function CheckpointDetailPage() {
     );
   }
 
-  const status = statusLabels[checkpoint.status];
+  const status = getCheckpointStatusLabel(checkpoint.status);
   const mapsUrl = `https://www.google.com/maps?q=${checkpoint.lat},${checkpoint.lng}`;
 
   return (
@@ -43,7 +38,7 @@ export function CheckpointDetailPage() {
           <h2 className="page__title">{checkpoint.name}</h2>
           <span className="checkpoint-card__local">{checkpoint.nameLocal}</span>
         </div>
-        <span className={`badge ${status.class}`}>{t(status.ru, status.en)}</span>
+        <span className={`badge ${status.className}`}>{t(status.ru, status.en, status.vi)}</span>
       </div>
 
       <p className="checkpoint-detail__desc">{checkpoint.description}</p>

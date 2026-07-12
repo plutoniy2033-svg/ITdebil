@@ -14,6 +14,7 @@ export function SecuritySettings() {
     clearDocumentCache,
   } = useSettings();
   const { t } = useLanguage();
+  const isPinValid = pinCode.length >= 4 && pinCode.length <= 6;
 
   return (
     <div className="settings-panel">
@@ -61,6 +62,15 @@ export function SecuritySettings() {
             onChange={(e) => setPinCode(e.target.value.replace(/\D/g, ''))}
             placeholder="••••"
           />
+          {!isPinValid && (
+            <p className="form-hint">
+              {t(
+                'PIN должен быть от 4 до 6 цифр.',
+                'PIN must contain 4 to 6 digits.',
+                'PIN phải có từ 4 đến 6 chữ số.',
+              )}
+            </p>
+          )}
         </div>
       )}
 

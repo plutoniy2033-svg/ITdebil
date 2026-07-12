@@ -61,6 +61,13 @@ function daysBetween(from: string, to: string): number {
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
+function normalizeDate(value: string): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+}
+
 const VisaTrackerContext = createContext<VisaTrackerContextValue | null>(null);
 
 export function VisaTrackerProvider({ children }: { children: ReactNode }) {
@@ -100,8 +107,24 @@ export function VisaTrackerProvider({ children }: { children: ReactNode }) {
 
   const value: VisaTrackerContextValue = {
     ...state,
-    setEntryDate: (entryDate) => setState((s) => ({ ...s, entryDate })),
-    setExitDate: (exitDate) => setState((s) => ({ ...s, exitDate })),
+    setEntryDate: (entryDate) =>
+      setState((s) => {
+        const normalizedEntry = normalizeDate(entryDate);
+        const normalizedExit = normalizeDate(s.exitDate);
+        const nextExit =
+          normalizedEntry && normalizedExit && normalizedExit < normalizedEntry ? '' : normalizedExit;
+        // Если новая дата въезда позже даты выезда, очищаем выезд, чтобы не ломать расчёт дней.
+        return { ...s, entryDate: normalizedEntry, exitDate: nextExit };
+      }),
+    setExitDate: (exitDate) =>
+      setState((s) => {
+        const normalizedExit = normalizeDate(exitDate);
+        const normalizedEntry = normalizeDate(s.entryDate);
+        const validExit =
+          normalizedExit && normalizedEntry && normalizedExit < normalizedEntry ? '' : normalizedExit;
+        // Не сохраняем некорректный диапазон дат (выезд раньше въезда).
+        return { ...s, exitDate: validExit };
+      }),
     setDayLimit: (dayLimit) => setState((s) => ({ ...s, dayLimit })),
     setLocation: (location) => setState((s) => ({ ...s, location })),
     setCitizenship: (citizenship) =>

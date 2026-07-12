@@ -14,6 +14,9 @@ export function TourCard({ tour }: TourCardProps) {
   return (
     <>
       <div className="tour-card">
+        <div className="tour-card__demo-badge">
+          <span className="badge badge--warning">{t('Demo', 'Demo', 'Demo')}</span>
+        </div>
         <div className="tour-card__route">
           <span>{tour.from}</span>
           <AppIcon name="arrow-right" size={16} className="tour-card__arrow" />
@@ -53,8 +56,8 @@ export function TourCard({ tour }: TourCardProps) {
             </p>
             <p className="text-muted">
               {t(
-                'Функция в разработке. Свяжитесь с оператором через Telegram.',
-                'Feature in development. Contact operator via Telegram.',
+                'Функция в разработке. Пока можно только посмотреть маршрут и цену.',
+                'Feature in development. For now you can only view route and price.',
               )}
             </p>
             <button type="button" className="btn btn--primary" onClick={() => setShowModal(false)}>

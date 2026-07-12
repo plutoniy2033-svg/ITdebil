@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { BorderReport } from '../types';
 import { checkpoints } from '../data/checkpoints';
 import { useLanguage } from '../context/LanguageContext';
@@ -10,25 +10,49 @@ interface BorderFeedProps {
 
 export function BorderFeed({ reports, initialCheckpointId }: BorderFeedProps) {
   const { t } = useLanguage();
+  const storageKey = 'visarun-border-feed';
   const [selectedCheckpoint, setSelectedCheckpoint] = useState(
     initialCheckpointId ?? 'moc-bai',
   );
   const [message, setMessage] = useState('');
-  const [localReports, setLocalReports] = useState(reports);
+  const [localReports, setLocalReports] = useState<BorderReport[]>(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      return raw ? (JSON.parse(raw) as BorderReport[]) : reports;
+    } catch {
+      return reports;
+    }
+  });
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(localReports));
+  }, [localReports]);
 
   const filtered = localReports.filter((r) => r.checkpointId === selectedCheckpoint);
   const checkpoint = checkpoints.find((c) => c.id === selectedCheckpoint);
 
   const handlePost = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    const normalized = message.trim();
+    if (normalized.length < 8) {
+      setError(
+        t(
+          'Добавьте чуть больше деталей (минимум 8 символов).',
+          'Add a bit more detail (minimum 8 characters).',
+          'Vui lòng thêm chi tiết (tối thiểu 8 ký tự).',
+        ),
+      );
+      return;
+    }
+    setError('');
 
     const newReport: BorderReport = {
       id: `br-${Date.now()}`,
       checkpointId: selectedCheckpoint,
       author: t('Вы', 'You'),
       time: t('только что', 'just now'),
-      message: message.trim(),
+      message: normalized,
     };
     setLocalReports([newReport, ...localReports]);
     setMessage('');
@@ -67,6 +91,7 @@ export function BorderFeed({ reports, initialCheckpointId }: BorderFeedProps) {
         <button type="submit" className="btn btn--primary btn--sm">
           {t('Отправить', 'Send')}
         </button>
+        {error && <p className="form-hint">{error}</p>}
       </form>
 
       <div className="border-feed__list">

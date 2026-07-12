@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { useVisaTracker } from '../../context/VisaTrackerContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { CITIZENSHIP_LABELS } from '../../utils/visaRules';
@@ -7,6 +8,7 @@ import { AppIcon } from '../AppIcon';
 import type { Citizenship, EntryType } from '../../types';
 
 export function ProfileSettings() {
+  const { client, logout } = useAuth();
   const {
     citizenship,
     entryType,
@@ -50,6 +52,16 @@ export function ProfileSettings() {
           'Dữ liệu này ảnh hưởng đến mọi tính toán tự động trong ứng dụng.',
         )}
       </p>
+
+      {client && (
+        <div className="settings-info-badge settings-info-badge--account">
+          <strong>{client.fullName}</strong>
+          <span>{client.email}</span>
+          <button type="button" className="btn btn--secondary btn--sm" onClick={logout}>
+            {t('Выйти', 'Log out', 'Đăng xuất')}
+          </button>
+        </div>
+      )}
 
       <div className="form-group">
         <label htmlFor="citizenship">

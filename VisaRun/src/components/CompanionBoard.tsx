@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CompanionPost } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -8,23 +8,48 @@ interface CompanionBoardProps {
 
 export function CompanionBoard({ initialPosts }: CompanionBoardProps) {
   const { t } = useLanguage();
-  const [posts, setPosts] = useState(initialPosts);
+  const storageKey = 'visarun-companion-posts';
+  const [posts, setPosts] = useState<CompanionPost[]>(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      return raw ? (JSON.parse(raw) as CompanionPost[]) : initialPosts;
+    } catch {
+      return initialPosts;
+    }
+  });
   const [route, setRoute] = useState('');
   const [date, setDate] = useState('');
   const [message, setMessage] = useState('');
   const [seats, setSeats] = useState(1);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(posts));
+  }, [posts]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!route || !message) return;
+    const normalizedRoute = route.trim();
+    const normalizedMessage = message.trim();
+    if (!normalizedRoute || normalizedMessage.length < 8) {
+      setError(
+        t(
+          'Заполните маршрут и сообщение (минимум 8 символов).',
+          'Fill route and message (minimum 8 characters).',
+          'Hãy nhập tuyến đường và tin nhắn (tối thiểu 8 ký tự).',
+        ),
+      );
+      return;
+    }
+    setError('');
 
     const newPost: CompanionPost = {
       id: `cp-${Date.now()}`,
       author: t('Вы', 'You'),
-      route,
+      route: normalizedRoute,
       date: date || t('Скоро', 'Soon'),
       seatsNeeded: seats,
-      message,
+      message: normalizedMessage,
       transport: t('Не указано', 'Not specified'),
     };
     setPosts([newPost, ...posts]);
@@ -77,6 +102,7 @@ export function CompanionBoard({ initialPosts }: CompanionBoardProps) {
         <button type="submit" className="btn btn--primary">
           {t('Опубликовать', 'Post')}
         </button>
+        {error && <p className="form-hint">{error}</p>}
       </form>
 
       <div className="companion-list">

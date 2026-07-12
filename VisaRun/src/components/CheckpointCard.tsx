@@ -2,12 +2,7 @@ import { Link } from 'react-router-dom';
 import type { Checkpoint } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { AppIcon } from './AppIcon';
-
-const statusLabels = {
-  open: { ru: 'Открыт', en: 'Open', class: 'badge--success' },
-  closed: { ru: 'Закрыт', en: 'Closed', class: 'badge--danger' },
-  busy: { ru: 'Загружен', en: 'Busy', class: 'badge--warning' },
-};
+import { getCheckpointStatusLabel } from '../utils/checkpointStatus';
 
 interface CheckpointCardProps {
   checkpoint: Checkpoint;
@@ -15,7 +10,7 @@ interface CheckpointCardProps {
 
 export function CheckpointCard({ checkpoint }: CheckpointCardProps) {
   const { t } = useLanguage();
-  const status = statusLabels[checkpoint.status];
+  const status = getCheckpointStatusLabel(checkpoint.status);
 
   return (
     <Link to={`/checkpoints/${checkpoint.id}`} className="checkpoint-card">
@@ -24,8 +19,8 @@ export function CheckpointCard({ checkpoint }: CheckpointCardProps) {
           <h3 className="checkpoint-card__name">{checkpoint.name}</h3>
           <span className="checkpoint-card__local">{checkpoint.nameLocal}</span>
         </div>
-        <span className={`badge ${status.class}`}>
-          {t(status.ru, status.en)}
+        <span className={`badge ${status.className}`}>
+          {t(status.ru, status.en, status.vi)}
         </span>
       </div>
       <div className="checkpoint-card__meta">

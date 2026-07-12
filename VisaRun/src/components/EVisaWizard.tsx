@@ -29,8 +29,26 @@ export function EVisaWizard() {
     t('Проверка', 'Review'),
   ];
 
+  const passportValid = /^[A-Z0-9]{6,12}$/i.test(form.passportNumber.replace(/\s/g, ''));
+  const mrzValid = form.icaoLine.replace(/\s/g, '').length >= 20;
+  const stepOneValid =
+    form.fullName.trim().length >= 5 && passportValid && mrzValid && form.nationality.trim().length >= 2;
+
+  const canGoNext =
+    (step === 1 && stepOneValid) ||
+    (step === 2 && form.photoUploaded) ||
+    (step === 3 && form.preArrivalCompleted) ||
+    step === 4;
+
   return (
     <div className="evisa-wizard">
+      <div className="alert alert--warning evisa-demo-note">
+        {t(
+          'Demo-режим: данные не отправляются в гос. систему, только проверяются на полноту.',
+          'Demo mode: data is not submitted to government systems, only completeness is checked.',
+          'Chế độ demo: dữ liệu không gửi lên hệ thống chính phủ, chỉ kiểm tra độ đầy đủ.',
+        )}
+      </div>
       <div className="evisa-wizard__steps">
         {stepLabels.map((label, i) => (
           <div
@@ -62,6 +80,15 @@ export function EVisaWizard() {
                 onChange={(e) => update({ passportNumber: e.target.value })}
                 placeholder="12 3456789"
               />
+              {form.passportNumber && !passportValid && (
+                <p className="form-hint">
+                  {t(
+                    'Номер должен содержать 6–12 символов: латиница и цифры.',
+                    'Passport number must be 6–12 latin letters/digits.',
+                    'Số hộ chiếu phải gồm 6–12 ký tự chữ Latin/số.',
+                  )}
+                </p>
+              )}
             </div>
             <div className="form-group">
               <label>{t('ICAO-строка (MRZ)', 'ICAO line (MRZ)')}</label>
@@ -76,6 +103,15 @@ export function EVisaWizard() {
                   'Copy the two lines at the bottom of your passport. Latin letters, «<» instead of spaces. No glasses in photo — MRZ must match.',
                 )}
               </p>
+              {form.icaoLine && !mrzValid && (
+                <p className="form-hint">
+                  {t(
+                    'ICAO строка выглядит короткой, проверьте копию MRZ.',
+                    'ICAO line looks too short, please re-check MRZ copy.',
+                    'Dòng ICAO có vẻ quá ngắn, vui lòng kiểm tra lại MRZ.',
+                  )}
+                </p>
+              )}
             </div>
             <div className="form-group">
               <label>{t('Гражданство', 'Nationality')}</label>
@@ -177,7 +213,7 @@ export function EVisaWizard() {
           </button>
         )}
         {step < STEPS ? (
-          <button type="button" className="btn btn--primary" onClick={() => setStep(step + 1)}>
+          <button type="button" className="btn btn--primary" onClick={() => setStep(step + 1)} disabled={!canGoNext}>
             {t('Далее', 'Next')}
           </button>
         ) : (

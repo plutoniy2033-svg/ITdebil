@@ -16,6 +16,10 @@ export function NotificationSettings() {
 
   const reminderLabel = (opt: (typeof REMINDER_OPTIONS)[number]) =>
     lang === 'vi' ? opt.label.vi : lang === 'en' ? opt.label.en : opt.label.ru;
+  const notificationPermission =
+    typeof window !== 'undefined' && 'Notification' in window
+      ? Notification.permission
+      : 'unsupported';
 
   return (
     <div className="settings-panel">
@@ -25,6 +29,21 @@ export function NotificationSettings() {
           'Configure push reminders so you never miss your exit deadline.',
           'Cấu hình thông báo đẩy để không bỏ lỡ hạn xuất cảnh.',
         )}
+      </p>
+      <p className="form-hint">
+        {notificationPermission === 'granted'
+          ? t('Локальные уведомления включены.', 'Local notifications are enabled.', 'Đã bật thông báo cục bộ.')
+          : notificationPermission === 'denied'
+            ? t(
+                'Уведомления отключены в браузере. Разрешите их в настройках сайта.',
+                'Notifications are blocked in browser. Allow them in site settings.',
+                'Thông báo bị chặn trong trình duyệt. Hãy cho phép trong cài đặt trang.',
+              )
+            : t(
+                'Разрешите уведомления в браузере для напоминаний по дедлайну.',
+                'Allow browser notifications for deadline reminders.',
+                'Cho phép thông báo trình duyệt để nhận nhắc hạn chót.',
+              )}
       </p>
 
       <h4 className="settings-panel__subtitle">

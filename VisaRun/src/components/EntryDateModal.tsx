@@ -12,8 +12,11 @@ export function EntryDateModal({ onClose }: EntryDateModalProps) {
   const { entryDate, setEntryDate } = useVisaTracker();
   const { t } = useLanguage();
   const [draftDate, setDraftDate] = useState(entryDate);
+  const today = new Date().toISOString().slice(0, 10);
+  const isFutureDate = Boolean(draftDate) && draftDate > today;
 
   const handleSave = () => {
+    if (isFutureDate) return;
     setEntryDate(draftDate);
     onClose();
   };
@@ -35,6 +38,15 @@ export function EntryDateModal({ onClose }: EntryDateModalProps) {
           value={draftDate}
           onChange={setDraftDate}
         />
+        {isFutureDate && (
+          <p className="form-hint">
+            {t(
+              'Дата въезда не может быть в будущем.',
+              'Entry date cannot be in the future.',
+              'Ngày nhập cảnh không thể ở tương lai.',
+            )}
+          </p>
+        )}
 
         <div className="modal__actions">
           <button type="button" className="btn btn--secondary" onClick={onClose}>
@@ -44,7 +56,7 @@ export function EntryDateModal({ onClose }: EntryDateModalProps) {
             type="button"
             className="btn btn--primary"
             onClick={handleSave}
-            disabled={!draftDate}
+            disabled={!draftDate || isFutureDate}
           >
             {t('Сохранить', 'Save', 'Lưu')}
           </button>
