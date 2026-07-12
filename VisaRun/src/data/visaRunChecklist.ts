@@ -1,0 +1,91 @@
+import type { ChecklistItem } from '../types';
+
+export const VISA_RUN_CHECKLIST: ChecklistItem[] = [
+  {
+    id: 'passport-validity',
+    category: 'documents',
+    labelRu: 'Паспорт действителен 6+ месяцев',
+    labelEn: 'Passport valid for 6+ months',
+    labelVi: 'Hộ chiếu còn hạn 6+ tháng',
+    required: true,
+  },
+  {
+    id: 'stamp-copies',
+    category: 'documents',
+    labelRu: 'Копии штампов и визы',
+    labelEn: 'Copies of stamps and visa',
+    labelVi: 'Bản sao tem và visa',
+    required: true,
+  },
+  {
+    id: 'photos-4x6',
+    category: 'documents',
+    labelRu: 'Фото 4×6 для re-entry',
+    labelEn: '4×6 photos for re-entry',
+    labelVi: 'Ảnh 4×6 để nhập cảnh lại',
+    required: false,
+  },
+  {
+    id: 'cash-usd',
+    category: 'money',
+    labelRu: 'Наличные USD на границе',
+    labelEn: 'USD cash for the border',
+    labelVi: 'Tiền mặt USD tại biên giới',
+    required: true,
+  },
+  {
+    id: 'cash-vnd',
+    category: 'money',
+    labelRu: 'VND на трансфер и еду',
+    labelEn: 'VND for transfer and food',
+    labelVi: 'VND cho xe và ăn uống',
+    required: false,
+  },
+  {
+    id: 'border-fee',
+    category: 'money',
+    labelRu: 'Запас на сборы/комиссии',
+    labelEn: 'Buffer for fees and commissions',
+    labelVi: 'Dự phòng phí và hoa hồng',
+    required: true,
+  },
+  {
+    id: 'checkpoint-selected',
+    category: 'route',
+    labelRu: 'Выбран основной КПП',
+    labelEn: 'Main checkpoint selected',
+    labelVi: 'Đã chọn cửa khẩu chính',
+    required: true,
+  },
+  {
+    id: 'backup-route',
+    category: 'route',
+    labelRu: 'Запасной маршрут на случай очереди',
+    labelEn: 'Backup route if queues are long',
+    labelVi: 'Tuyến dự phòng nếu xếp hàng dài',
+    required: false,
+  },
+  {
+    id: 'exit-date-set',
+    category: 'timing',
+    labelRu: 'Дата выезда запланирована',
+    labelEn: 'Exit date is planned',
+    labelVi: 'Đã lên ngày xuất cảnh',
+    required: true,
+  },
+  {
+    id: 'buffer-days',
+    category: 'timing',
+    labelRu: 'Буфер 2–3 дня до дедлайна',
+    labelEn: '2–3 day buffer before deadline',
+    labelVi: 'Dự trữ 2–3 ngày trước hạn',
+    required: true,
+  },
+];
+
+export const CHECKLIST_CATEGORIES = [
+  { id: 'documents' as const, labelRu: 'Документы', labelEn: 'Documents', labelVi: 'Giấy tờ' },
+  { id: 'money' as const, labelRu: 'Деньги', labelEn: 'Money', labelVi: 'Tiền' },
+  { id: 'route' as const, labelRu: 'Маршрут', labelEn: 'Route', labelVi: 'Tuyến đường' },
+  { id: 'timing' as const, labelRu: 'Сроки', labelEn: 'Timing', labelVi: 'Thời gian' },
+];

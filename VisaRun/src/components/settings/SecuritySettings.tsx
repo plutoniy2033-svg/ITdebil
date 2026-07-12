@@ -42,11 +42,11 @@ export function SecuritySettings() {
         id="pin-code"
         checked={pinEnabled}
         onChange={setPinEnabled}
-        label={t('PIN-код', 'PIN code', 'Mã PIN')}
+        label={t('PIN-код (демо, только на этом устройстве)', 'PIN code (demo, this device only)', 'Mã PIN (demo, chỉ thiết bị này)')}
         description={t(
-          'Короткий PIN для входа, если биометрия недоступна.',
-          'Short PIN when biometrics are unavailable.',
-          'PIN ngắn khi không dùng được sinh trắc học.',
+          'PIN хранится только локально и не синхронизируется с сервером.',
+          'PIN is stored locally only and is not synced to the server.',
+          'PIN chỉ lưu cục bộ và không đồng bộ với máy chủ.',
         )}
       />
 

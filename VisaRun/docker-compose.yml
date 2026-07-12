@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: visarun-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: visarun
+      POSTGRES_PASSWORD: visarun
+      POSTGRES_DB: visarun
+    ports:
+      - '5432:5432'
+    volumes:
+      - visarun_pg_data:/var/lib/postgresql/data
+
+volumes:
+  visarun_pg_data:

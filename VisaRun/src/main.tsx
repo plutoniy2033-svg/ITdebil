@@ -6,6 +6,8 @@ import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
 import { VisaTrackerProvider } from './context/VisaTrackerContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { NotificationProvider } from './context/NotificationContext';
+import { ChecklistProvider } from './context/ChecklistContext';
 import { DeadlineReminderSync } from './components/DeadlineReminderSync';
 import { AuthGate } from './components/AuthGate';
 import 'leaflet/dist/leaflet.css';
@@ -17,12 +19,16 @@ createRoot(document.getElementById('root')!).render(
       <LanguageProvider>
         <AuthProvider>
           <AuthGate>
-            <VisaTrackerProvider>
-              <SettingsProvider>
-                <DeadlineReminderSync />
-                <App />
-              </SettingsProvider>
-            </VisaTrackerProvider>
+            <NotificationProvider>
+              <VisaTrackerProvider>
+                <SettingsProvider>
+                  <ChecklistProvider>
+                    <DeadlineReminderSync />
+                    <App />
+                  </ChecklistProvider>
+                </SettingsProvider>
+              </VisaTrackerProvider>
+            </NotificationProvider>
           </AuthGate>
         </AuthProvider>
       </LanguageProvider>

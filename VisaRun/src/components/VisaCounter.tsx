@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useVisaTracker } from '../context/VisaTrackerContext';
 import { useLanguage } from '../context/LanguageContext';
 import { EntryDateModal } from './EntryDateModal';
+import { buildDeadlineIcs, downloadIcsFile } from '../utils/calendarExport';
 
 export function VisaCounter() {
   const {
@@ -12,11 +13,29 @@ export function VisaCounter() {
     isOverstay,
     overstayDays,
     statusColor,
+    location,
   } = useVisaTracker();
   const { t } = useLanguage();
   const [showEntryModal, setShowEntryModal] = useState(false);
 
   const progress = dayLimit > 0 ? Math.min(100, (daysUsed / dayLimit) * 100) : 0;
+
+  const handleExportCalendar = () => {
+    const ics = buildDeadlineIcs({
+      entryDate,
+      dayLimit,
+      location: location.trim() || 'Vietnam',
+      title: t('Дедлайн визы VisaRun', 'VisaRun visa deadline', 'Hạn visa VisaRun'),
+      description: t(
+        `Последний день пребывания в ${location || 'Vietnam'}. Запланируйте визаран заранее.`,
+        `Last legal day in ${location || 'Vietnam'}. Plan your visa run in advance.`,
+        `Ngày cuối hợp pháp tại ${location || 'Vietnam'}. Hãy lên kế hoạch visa run sớm.`,
+      ),
+    });
+
+    if (!ics) return;
+    downloadIcsFile(ics, 'visarun-deadline.ics');
+  };
 
   return (
     <div className="visa-hero">
@@ -84,6 +103,12 @@ export function VisaCounter() {
                   `${daysUsed} of ${dayLimit} days used`,
                 )}
         </p>
+
+        {entryDate && (
+          <button type="button" className="btn btn--secondary btn--small visa-hero__calendar-btn" onClick={handleExportCalendar}>
+            {t('Добавить в календарь (.ics)', 'Add to calendar (.ics)', 'Thêm vào lịch (.ics)')}
+          </button>
+        )}
       </div>
 
       {showEntryModal && <EntryDateModal onClose={() => setShowEntryModal(false)} />}

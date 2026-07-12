@@ -1,54 +1,27 @@
-import Database from 'better-sqlite3';
-import { mkdirSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import pg from 'pg';
+import { config } from './config.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const dbPath = join(__dirname, 'data', 'clients.db');
+const { Pool } = pg;
 
-mkdirSync(dirname(dbPath), { recursive: true });
+export const pool = new Pool({
+  connectionString: config.databaseUrl,
+});
 
-const db = new Database(dbPath);
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS clients (
-    id TEXT PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    full_name TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    last_login_at TEXT
-  );
-`);
-
-export function findClientByEmail(email) {
-  return db
-    .prepare('SELECT * FROM clients WHERE email = ?')
-    .get(email.toLowerCase().trim());
+export async function query(text, params = []) {
+  return pool.query(text, params);
 }
 
-export function findClientById(id) {
-  return db.prepare('SELECT * FROM clients WHERE id = ?').get(id);
-}
-
-export function createClient({ id, email, passwordHash, fullName, createdAt }) {
-  db.prepare(
-    `INSERT INTO clients (id, email, password_hash, full_name, created_at)
-     VALUES (?, ?, ?, ?, ?)`,
-  ).run(id, email.toLowerCase().trim(), passwordHash, fullName.trim(), createdAt);
-}
-
-export function updateLastLogin(id, lastLoginAt) {
-  db.prepare('UPDATE clients SET last_login_at = ? WHERE id = ?').run(lastLoginAt, id);
-}
-
-export function toPublicClient(row) {
-  if (!row) return null;
-  return {
-    id: row.id,
-    email: row.email,
-    fullName: row.full_name,
-    createdAt: row.created_at,
-    lastLoginAt: row.last_login_at,
-  };
+export async function withTransaction(callback) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }

@@ -110,6 +110,29 @@ export interface Client {
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
+export type AppNotificationType = 'deadline' | 'critical' | 'overstay';
+
+export interface AppNotification {
+  id: string;
+  type: AppNotificationType;
+  title: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+  daysRemaining?: number;
+}
+
+export type ChecklistCategory = 'documents' | 'money' | 'route' | 'timing';
+
+export interface ChecklistItem {
+  id: string;
+  category: ChecklistCategory;
+  labelRu: string;
+  labelEn: string;
+  labelVi: string;
+  required: boolean;
+}
+
 export interface EVisaFormData {
   fullName: string;
   passportNumber: string;

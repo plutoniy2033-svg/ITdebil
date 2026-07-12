@@ -1,9 +1,8 @@
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'visarun-dev-secret-change-me';
+import { config } from '../config.js';
 
 export function signToken(clientId) {
-  return jwt.sign({ sub: clientId }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ sub: clientId }, config.jwtSecret, { expiresIn: '7d' });
 }
 
 export function authMiddleware(req, res, next) {
@@ -14,7 +13,7 @@ export function authMiddleware(req, res, next) {
 
   const token = header.slice(7);
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
+    const payload = jwt.verify(token, config.jwtSecret);
     req.clientId = payload.sub;
     next();
   } catch {

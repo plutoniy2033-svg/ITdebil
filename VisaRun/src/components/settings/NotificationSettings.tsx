@@ -1,5 +1,6 @@
 import { useSettings } from '../../context/SettingsContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { ToggleSwitch } from './ToggleSwitch';
 
 const REMINDER_OPTIONS = [
@@ -12,38 +13,33 @@ const REMINDER_OPTIONS = [
 export function NotificationSettings() {
   const { reminders, notificationTime, criticalAlerts, setReminders, setNotificationTime, setCriticalAlerts } =
     useSettings();
+  const { addNotification } = useNotifications();
   const { t, lang } = useLanguage();
 
   const reminderLabel = (opt: (typeof REMINDER_OPTIONS)[number]) =>
     lang === 'vi' ? opt.label.vi : lang === 'en' ? opt.label.en : opt.label.ru;
-  const notificationPermission =
-    typeof window !== 'undefined' && 'Notification' in window
-      ? Notification.permission
-      : 'unsupported';
+
+  const sendTestNotification = () => {
+    addNotification({
+      type: 'deadline',
+      title: t('Тест VisaRun', 'VisaRun test', 'Thử VisaRun'),
+      message: t(
+        'Это тестовое in-app уведомление. Напоминания по дедлайну будут появляться здесь.',
+        'This is a test in-app notification. Deadline reminders will appear here.',
+        'Đây là thông báo thử trong ứng dụng. Nhắc hạn sẽ hiện ở đây.',
+      ),
+      daysRemaining: 7,
+    });
+  };
 
   return (
     <div className="settings-panel">
       <p className="settings-panel__intro">
         {t(
-          'Настройте push-напоминания, чтобы не пропустить дедлайн выезда.',
-          'Configure push reminders so you never miss your exit deadline.',
-          'Cấu hình thông báo đẩy để không bỏ lỡ hạn xuất cảnh.',
+          'In-app напоминания о дедлайне выезда. Откройте колокольчик в шапке, чтобы посмотреть историю.',
+          'In-app reminders about your exit deadline. Open the bell in the header to see history.',
+          'Nhắc hạn xuất cảnh trong ứng dụng. Mở biểu tượng chuông ở đầu trang để xem lịch sử.',
         )}
-      </p>
-      <p className="form-hint">
-        {notificationPermission === 'granted'
-          ? t('Локальные уведомления включены.', 'Local notifications are enabled.', 'Đã bật thông báo cục bộ.')
-          : notificationPermission === 'denied'
-            ? t(
-                'Уведомления отключены в браузере. Разрешите их в настройках сайта.',
-                'Notifications are blocked in browser. Allow them in site settings.',
-                'Thông báo bị chặn trong trình duyệt. Hãy cho phép trong cài đặt trang.',
-              )
-            : t(
-                'Разрешите уведомления в браузере для напоминаний по дедлайну.',
-                'Allow browser notifications for deadline reminders.',
-                'Cho phép thông báo trình duyệt để nhận nhắc hạn chót.',
-              )}
       </p>
 
       <h4 className="settings-panel__subtitle">
@@ -74,9 +70,9 @@ export function NotificationSettings() {
         />
         <p className="form-hint">
           {t(
-            'Пуши придут только в выбранное время, например в 10:00 утра.',
-            'Pushes arrive only at the chosen time, e.g. 10:00 AM.',
-            'Thông báo chỉ gửi vào giờ đã chọn, ví dụ 10:00 sáng.',
+            'Напоминание создаётся после этого времени, не чаще одного раза в день.',
+            'Reminder is created after this time, at most once per day.',
+            'Nhắc nhở được tạo sau thời gian này, tối đa một lần mỗi ngày.',
           )}
         </p>
       </div>
@@ -91,11 +87,17 @@ export function NotificationSettings() {
           'Cảnh báo khẩn (48 giờ)',
         )}
         description={t(
-          'Громкий сигнал за 48 часов до дедлайна, даже в режиме «Не беспокоить».',
-          'Loud alert 48 hours before deadline, even in Do Not Disturb mode.',
-          'Chuông to 48 giờ trước hạn, kể cả khi bật Không làm phiền.',
+          'Дополнительное in-app уведомление за 48 часов до дедлайна.',
+          'Extra in-app alert 48 hours before the deadline.',
+          'Thông báo bổ sung trong app 48 giờ trước hạn.',
         )}
       />
+
+      <div className="settings-divider" />
+
+      <button type="button" className="btn btn--secondary" onClick={sendTestNotification}>
+        {t('Отправить тестовое уведомление', 'Send test notification', 'Gửi thông báo thử')}
+      </button>
     </div>
   );
 }

@@ -1,4 +1,13 @@
-import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import type {
   VisaTrackerState,
   VisaLimit,
@@ -7,8 +16,20 @@ import type {
   VisaRunRecord,
 } from '../types';
 import { getDefaultDayLimit } from '../utils/visaRules';
+import { fetchTracker, saveTracker } from '../api/userData';
+import {
+  isTrackerEmpty,
+  isTrackerImported,
+  loadLegacyTracker,
+  markTrackerImported,
+  saveLocalTracker,
+} from '../utils/localDataMigration';
 
 interface VisaTrackerContextValue extends VisaTrackerState {
+  loading: boolean;
+  isLocalMode: boolean;
+  error: string | null;
+  reload: () => Promise<void>;
   setEntryDate: (date: string) => void;
   setExitDate: (date: string) => void;
   setDayLimit: (limit: VisaLimit) => void;
@@ -24,8 +45,6 @@ interface VisaTrackerContextValue extends VisaTrackerState {
   statusColor: 'success' | 'warning' | 'danger';
 }
 
-const STORAGE_KEY = 'visarun-tracker';
-
 const defaultState: VisaTrackerState = {
   entryDate: '',
   exitDate: '',
@@ -35,23 +54,6 @@ const defaultState: VisaTrackerState = {
   entryType: 'visa-free',
   visaRunHistory: [],
 };
-
-function loadState(): VisaTrackerState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return {
-        ...defaultState,
-        ...parsed,
-        visaRunHistory: parsed.visaRunHistory ?? [],
-      };
-    }
-  } catch {
-    /* ignore corrupt data */
-  }
-  return defaultState;
-}
 
 function daysBetween(from: string, to: string): number {
   if (!from || !to) return 0;
@@ -71,11 +73,96 @@ function normalizeDate(value: string): string {
 const VisaTrackerContext = createContext<VisaTrackerContextValue | null>(null);
 
 export function VisaTrackerProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<VisaTrackerState>(loadState);
+  const [state, setState] = useState<VisaTrackerState>(defaultState);
+  const [loading, setLoading] = useState(true);
+  const [isLocalMode, setIsLocalMode] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const hydratedRef = useRef(false);
+  const saveTimerRef = useRef<number | null>(null);
+  const localModeRef = useRef(false);
+
+  const persistState = useCallback(async (nextState: VisaTrackerState) => {
+    if (localModeRef.current) {
+      saveLocalTracker(nextState);
+      setError(null);
+      return;
+    }
+
+    try {
+      await saveTracker(nextState);
+      setError(null);
+    } catch {
+      localModeRef.current = true;
+      setIsLocalMode(true);
+      saveLocalTracker(nextState);
+      setError(null);
+    }
+  }, []);
+
+  const scheduleSave = useCallback(
+    (nextState: VisaTrackerState) => {
+      if (saveTimerRef.current) {
+        window.clearTimeout(saveTimerRef.current);
+      }
+      saveTimerRef.current = window.setTimeout(() => {
+        void persistState(nextState);
+      }, 400);
+    },
+    [persistState],
+  );
+
+  const loadFromServer = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let tracker = (await fetchTracker()).tracker;
+      localModeRef.current = false;
+      setIsLocalMode(false);
+
+      if (!isTrackerImported() && isTrackerEmpty(tracker)) {
+        const legacy = loadLegacyTracker();
+        if (!isTrackerEmpty(legacy)) {
+          tracker = (await saveTracker(legacy)).tracker;
+          markTrackerImported();
+        } else {
+          markTrackerImported();
+        }
+      }
+
+      setState(tracker);
+      hydratedRef.current = true;
+    } catch {
+      localModeRef.current = true;
+      setIsLocalMode(true);
+      setState(loadLegacyTracker());
+      hydratedRef.current = true;
+      setError(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+    void loadFromServer();
+    return () => {
+      if (saveTimerRef.current) {
+        window.clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, [loadFromServer]);
+
+  const updateState = useCallback(
+    (updater: (current: VisaTrackerState) => VisaTrackerState) => {
+      setState((current) => {
+        const next = updater(current);
+        if (hydratedRef.current) {
+          scheduleSave(next);
+        }
+        return next;
+      });
+    },
+    [scheduleSave],
+  );
 
   const today = new Date().toISOString().slice(0, 10);
   const referenceDate = state.exitDate || today;
@@ -107,40 +194,39 @@ export function VisaTrackerProvider({ children }: { children: ReactNode }) {
 
   const value: VisaTrackerContextValue = {
     ...state,
+    loading,
+    isLocalMode,
+    error,
+    reload: loadFromServer,
     setEntryDate: (entryDate) =>
-      setState((s) => {
+      updateState((s) => {
         const normalizedEntry = normalizeDate(entryDate);
         const normalizedExit = normalizeDate(s.exitDate);
         const nextExit =
           normalizedEntry && normalizedExit && normalizedExit < normalizedEntry ? '' : normalizedExit;
-        // Если новая дата въезда позже даты выезда, очищаем выезд, чтобы не ломать расчёт дней.
         return { ...s, entryDate: normalizedEntry, exitDate: nextExit };
       }),
     setExitDate: (exitDate) =>
-      setState((s) => {
+      updateState((s) => {
         const normalizedExit = normalizeDate(exitDate);
         const normalizedEntry = normalizeDate(s.entryDate);
         const validExit =
           normalizedExit && normalizedEntry && normalizedExit < normalizedEntry ? '' : normalizedExit;
-        // Не сохраняем некорректный диапазон дат (выезд раньше въезда).
         return { ...s, exitDate: validExit };
       }),
-    setDayLimit: (dayLimit) => setState((s) => ({ ...s, dayLimit })),
-    setLocation: (location) => setState((s) => ({ ...s, location })),
+    setDayLimit: (dayLimit) => updateState((s) => ({ ...s, dayLimit })),
+    setLocation: (location) => updateState((s) => ({ ...s, location })),
     setCitizenship: (citizenship) =>
-      setState((s) => applyProfileRules({ citizenship }, s)),
+      updateState((s) => applyProfileRules({ citizenship }, s)),
     setEntryType: (entryType) =>
-      setState((s) => applyProfileRules({ entryType }, s)),
+      updateState((s) => applyProfileRules({ entryType }, s)),
     addVisaRunRecord: (record) =>
-      setState((s) => ({
+      updateState((s) => ({
         ...s,
-        visaRunHistory: [
-          { ...record, id: crypto.randomUUID() },
-          ...s.visaRunHistory,
-        ],
+        visaRunHistory: [{ ...record, id: crypto.randomUUID() }, ...s.visaRunHistory],
       })),
     removeVisaRunRecord: (id) =>
-      setState((s) => ({
+      updateState((s) => ({
         ...s,
         visaRunHistory: s.visaRunHistory.filter((r) => r.id !== id),
       })),

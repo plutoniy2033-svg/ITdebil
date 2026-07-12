@@ -1,4 +1,5 @@
 import type { Client } from '../types';
+import { apiRequest } from './client';
 
 const TOKEN_KEY = 'visarun-auth-token';
 
@@ -12,29 +13,6 @@ export function setStoredToken(token: string | null) {
   } else {
     localStorage.removeItem(TOKEN_KEY);
   }
-}
-
-async function apiRequest<T>(
-  path: string,
-  options: RequestInit = {},
-  withAuth = false,
-): Promise<T> {
-  const headers = new Headers(options.headers);
-  headers.set('Content-Type', 'application/json');
-
-  if (withAuth) {
-    const token = getStoredToken();
-    if (token) headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  const response = await fetch(path, { ...options, headers });
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.error || 'Request failed');
-  }
-
-  return data as T;
 }
 
 export async function registerClient(payload: {
